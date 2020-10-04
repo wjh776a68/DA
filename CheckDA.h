@@ -7,7 +7,7 @@
 *								Author:				wjh776a68												*
 *  								Function:			Words Analyse Class, Analyse Input and output.			*
 *	 							CreateTime:			2020/10/03												*
-* 								LastUpdateTime:		2020/10/03												*
+* 								LastUpdateTime:		2020/10/04												*
 * 																											*
 *************************************************************************************************************/
 
@@ -69,19 +69,21 @@ private:
 	std::list<std::string> ArithmeticSet;										//算数运算符表
 	std::list<std::string> RelationSet;											//关系运算符表
 
-	RichTextDialogclass Output_Bind_RichTextDialogclass;
+	//RichTextDialogclass Output_Bind_RichTextDialogclass;
+	HWND				Output_Bind_RichTextDialogclass;
 	RichTextDialogclass Input_Bind_RichTextDialogclass;
+	int					nIndex;
 
 	CHARFORMAT2 blackstyle;
 	CHARFORMAT2 bluestyle;
 	CHARFORMAT2 greenstyle;
 	CHARFORMAT2 redstyle;
 
-	TCHAR tmpbuffer[4*MAXLEN] = TEXT("\
+	/*TCHAR tmpbuffer[4*MAXLEN] = TEXT("\
 ===============================================================================================================================\n\
                               词法分析结果: \n\
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-单词        二元序列（单词种别，单词属性）        类型                  位置（行，列）\n");
+单词        二元序列（单词种别，单词属性）        类型                  位置（行，列）\n");*/
 	TCHAR output[MAXLEN] = { 0 };
 	TCHAR newline[10] = TEXT("\r\n");
 

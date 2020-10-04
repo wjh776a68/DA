@@ -7,7 +7,7 @@
 *								Author:				wjh776a68												*
 *  								Function:			Words Analyse Class, Analyse Input and output.			*
 *	 							CreateTime:			2020/10/03												*
-* 								LastUpdateTime:		2020/10/03												*
+* 								LastUpdateTime:		2020/10/04												*
 * 																											*
 *************************************************************************************************************/
 
@@ -58,9 +58,13 @@ CheckDAclass::CheckDAclass() {
 int CheckDAclass::DoCheck()
 {
 	CheckDAclass_word = "";
-	Output_Bind_RichTextDialogclass.RichTextDialog_ClearText();
+
+	SendMessage(Output_Bind_RichTextDialogclass, LVM_DELETEALLITEMS, 0, 0);
+
+	nIndex = 0;
+	//Output_Bind_RichTextDialogclass.RichTextDialog_ClearText();
 	
-	Output_Bind_RichTextDialogclass.RichTextDialog_SetText(tmpbuffer);
+	//Output_Bind_RichTextDialogclass.RichTextDialog_SetText(tmpbuffer);
 
 	//Output_Bind_RichTextDialogclass.RichTextDialog_Lock();
 
@@ -298,37 +302,59 @@ bool CheckDAclass::isinlist(std::list<std::string> inputlist, std::string inputs
 //}
 
 void CheckDAclass::mixoutput(TCHAR* wc,TCHAR* attrib,TCHAR* wordtype,TCHAR* position) {
-	int i;
-	for ( i = 0; i < MAXLEN; i++) {
-		output[i] = '\0';
-	}
 
-	lstrcpy(output, wc);
-	int keeplength = lstrlen(output);
-	for ( i = 0; i < 40-lstrlen(wc); i++) {
-		output[keeplength + i] = ' ';
-	}
-	lstrcat(output, attrib);
+	LV_ITEM lv;
+	lv.mask = LVIF_TEXT;
+	lv.iSubItem = 0;
+	lv.iItem = nIndex++;
+	lv.iImage = 0;
+	lv.pszText = wc;
+	ListView_InsertItem(Output_Bind_RichTextDialogclass, &lv);
+	lv.iSubItem = 1;
+	lv.pszText = attrib;
+	ListView_SetItem(Output_Bind_RichTextDialogclass, &lv);
+	lv.iSubItem = 2;
+	lv.pszText = wordtype;
+	ListView_SetItem(Output_Bind_RichTextDialogclass, &lv);
+	lv.iSubItem = 3;
+	lv.pszText = position;
+	ListView_SetItem(Output_Bind_RichTextDialogclass, &lv);
 
-	keeplength = lstrlen(output);
-	for ( i = 0; i < 38 - lstrlen(attrib); i++) {
-		output[keeplength + i] = ' ';
-	}
-	lstrcat(output, wordtype);
 
-	keeplength = lstrlen(output);
-	for ( i = 0; i < 30 - int(lstrlen(wordtype) * 2 / 3 + 1); i++) {
-		output[keeplength + i] = ' ';
-	}
-	lstrcat(output, position);
 
-	//keeplength = lstrlen(output);
-	//for ( i = 0; i < 40 - lstrlen(position); i++) {
-	//	output[keeplength + i] = ' ';
+
+
+	//int i;
+	//for ( i = 0; i < MAXLEN; i++) {
+	//	output[i] = '\0';
 	//}
 
-	Output_Bind_RichTextDialogclass.RichTextDialog_AppendText(output);
-	Output_Bind_RichTextDialogclass.RichTextDialog_AppendText(newline);
+	//lstrcpy(output, wc);
+	//int keeplength = lstrlen(output);
+	//for ( i = 0; i < 40-lstrlen(wc); i++) {
+	//	output[keeplength + i] = ' ';
+	//}
+	//lstrcat(output, attrib);
+
+	//keeplength = lstrlen(output);
+	//for ( i = 0; i < 38 - lstrlen(attrib); i++) {
+	//	output[keeplength + i] = ' ';
+	//}
+	//lstrcat(output, wordtype);
+
+	//keeplength = lstrlen(output);
+	//for ( i = 0; i < 30 - int(lstrlen(wordtype) * 2 / 3 + 1); i++) {
+	//	output[keeplength + i] = ' ';
+	//}
+	//lstrcat(output, position);
+
+	////keeplength = lstrlen(output);
+	////for ( i = 0; i < 40 - lstrlen(position); i++) {
+	////	output[keeplength + i] = ' ';
+	////}
+
+	//Output_Bind_RichTextDialogclass.RichTextDialog_AppendText(output);
+	//Output_Bind_RichTextDialogclass.RichTextDialog_AppendText(newline);
 }
 
 void CheckDAclass::output_Binded_OutputRichText() {
@@ -449,7 +475,8 @@ void CheckDAclass::BindOutputHWND(HWND Output_RichTextDialogclass)
 {
     // TODO: Add your implementation code here.
 	HWND tmp = Output_RichTextDialogclass;
-	Output_Bind_RichTextDialogclass.RichTextDialog_BindHWND(tmp);
+	Output_Bind_RichTextDialogclass = tmp;
+	//Output_Bind_RichTextDialogclass.RichTextDialog_BindHWND(tmp);
 }
 
 void CheckDAclass::AddKeywords(std::string input) {

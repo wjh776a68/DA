@@ -37,6 +37,7 @@
 #include <Commdlg.h>
 #include <Shlobj.h>						//选择文件夹对话框
 
+
 #include "resource.h"
 #include "FileDialog.h"
 #include "FileIOFunctions.h"

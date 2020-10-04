@@ -7,7 +7,7 @@
 *								Author:				wjh776a68												*
 *  								Function:			RichTextbox functions set header file.					*
 *	 							CreateTime:			2020/10/02												*
-* 								LastUpdateTime:		2020/10/02												*
+* 								LastUpdateTime:		2020/10/04												*
 * 																											*
 *************************************************************************************************************/
 

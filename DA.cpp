@@ -1,7 +1,7 @@
 
 /************************************************************************************************************
 *								This Source File is part of DA Project										*
-* 								    Copyright (c) wjh776a68 2019-2020										*
+* 								    Copyright (c) wjh776a68 2020								    		*
 * 																											*
 *								File Name:			DA.cpp							        				*
 *								Author:				wjh776a68												*
@@ -20,6 +20,7 @@
 #include "CheckDA.h"
 #define MAX_LOADSTRING 100
 
+#define IDM_LISTBOX_OUTPUT 10685
 #define IDM_BUTTON_ADDKEYWORDS 10681
 #define IDM_BUTTON_ADDDIVISIONS 10682
 #define IDM_BUTTON_ADDARITHMETIC 10683
@@ -32,7 +33,8 @@ WCHAR                   szWindowClass[MAX_LOADSTRING];            // the main wi
 TCHAR                   szWindowClass_SubWindows[MAX_LOADSTRING] = _T("childwin32app");
 
 HWND                    main_RichTextBox_VAR;                      //富文本框
-HWND                    main_underoutput_RichTextBox_VAR;          //下方输出富文本框
+//HWND                    main_underoutput_RichTextBox_VAR;          //下方输出富文本框
+HWND                    hwndList;                                   //下方输出表单
 
 HWND                    subwindows_AddVIW_hwnd;
 HWND                    SubWindows_TextBox,
@@ -193,17 +195,46 @@ int createwidgets(HWND hWnd) {
         0, 0, 480, 400,
         hWnd, NULL, hInst, NULL);
 
-    main_underoutput_RichTextBox_VAR = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("暂无输出.\n"),
-        WS_VISIBLE | WS_CHILD | WS_VSCROLL |
-        ES_MULTILINE | ES_LEFT | ES_NOHIDESEL | ES_AUTOVSCROLL /*| ES_READONLY*/,
-        0, 0, 480, 400,
-        hWnd, NULL, hInst, NULL);
+    //main_underoutput_RichTextBox_VAR = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("暂无输出.\n"),
+    //    WS_VISIBLE | WS_CHILD | WS_VSCROLL |
+    //    ES_MULTILINE | ES_LEFT | ES_NOHIDESEL | ES_AUTOVSCROLL /*| ES_READONLY*/,
+    //    0, 0, 480, 400,
+    //    hWnd, NULL, hInst, NULL);
 
-    if (!main_underoutput_RichTextBox_VAR | !main_RichTextBox_VAR){
+    if (/*!main_underoutput_RichTextBox_VAR |*/ !main_RichTextBox_VAR){
         FatalAppExitA(0, "Couldn't create the rich text box,program exit!");
         return -1;
     }
 
+    hwndList = CreateWindowEx(0,WC_LISTVIEW, TEXT(""),
+        WS_VISIBLE | WS_BORDER | WS_CHILD | LVS_REPORT | WS_THICKFRAME | WS_EX_TOPMOST    /* | LVS_EDITLABELS*/,
+        0, 0, 480, 400,
+        hWnd, (HMENU)IDM_LISTBOX_OUTPUT, hInst, 0);
+
+    ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT /*| LVS_EX_CHECKBOXES*/ | LVS_EX_GRIDLINES);
+
+    
+    tagLVCOLUMNW lvcolum;
+    TCHAR wordtext[] = TEXT("单词"),attribtext[] = TEXT("二元序列（单词种别，单词属性）"),typetext[] = TEXT("类型"),positiontext[] = TEXT("位置（行，列）");
+    
+    lvcolum.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+    lvcolum.fmt = LVCFMT_CENTER;
+    lvcolum.cx = 150;
+    lvcolum.pszText = wordtext;
+    lvcolum.iSubItem = 0;
+    ListView_InsertColumn(hwndList, 0, &lvcolum);
+    lvcolum.cx = 340;
+    lvcolum.pszText = attribtext;
+    lvcolum.iSubItem = 1;
+    ListView_InsertColumn(hwndList, 1, &lvcolum);
+    lvcolum.cx = 190;
+    lvcolum.pszText = typetext;
+    lvcolum.iSubItem = 2;
+    ListView_InsertColumn(hwndList, 2, &lvcolum);
+    lvcolum.cx = 760;
+    lvcolum.pszText = positiontext;
+    lvcolum.iSubItem = 3;
+    ListView_InsertColumn(hwndList, 3, &lvcolum);
 
 
     return 0;
@@ -334,7 +365,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if(createwidgets(hWnd)==-1) //Error
             return -1;
         RichTextDialog_main_core.RichTextDialog_BindHWND(main_RichTextBox_VAR);
-        RichTextDialog_output_core.RichTextDialog_BindHWND(main_underoutput_RichTextBox_VAR);
+       // RichTextDialog_output_core.RichTextDialog_BindHWND(main_underoutput_RichTextBox_VAR);
         break;
     }
     case WM_COMMAND:
@@ -374,8 +405,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case ID_FILE_DACHECK:
             
             CheckDACore.BindInputHWND(main_RichTextBox_VAR);
-            CheckDACore.BindOutputHWND(main_underoutput_RichTextBox_VAR);
-
+            //CheckDACore.BindOutputHWND(main_underoutput_RichTextBox_VAR);
+            CheckDACore.BindOutputHWND(hwndList);      
             CheckDACore.DoCheck();
             break;
 
@@ -407,8 +438,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         LPRECT rect = (LPRECT)malloc(sizeof(tagRECT));
         GetClientRect(hWnd, rect);
         SetWindowPos(main_RichTextBox_VAR, HWND_TOP, 0, 0, rect->right, int(rect->bottom * 0.6), SWP_NOMOVE | SWP_NOZORDER);
-
-        SetWindowPos(main_underoutput_RichTextBox_VAR, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
+        SetWindowPos(hwndList, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
+       // SetWindowPos(main_underoutput_RichTextBox_VAR, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
         break;
         
     }

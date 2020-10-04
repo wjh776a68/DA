@@ -7,7 +7,7 @@
 *								Author:				wjh776a68												*
 *  								Function:			RichTextbox functions set source file.					*
 *	 							CreateTime:			2020/10/02												*
-* 								LastUpdateTime:		2020/10/02												*
+* 								LastUpdateTime:		2020/10/04												*
 * 																											*
 *************************************************************************************************************/
 
