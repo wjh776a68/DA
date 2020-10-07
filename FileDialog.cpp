@@ -14,7 +14,14 @@
 //#include "pch.h"
 #include"FileDialog.h"
 
-
+/******************************************************************************
+*				函数名：		OpenWindowsDlg
+*				函数功能：	添加关系运算符
+*				传入参数：	IsOpen,			bool	是否打开已存在文件或创建文件
+							IsPickFolder,	bool	是否打开文件夹
+							pFilePath		TCHAR*	文件路径返回变量
+*				传出参数：	true			bool	是否成功打开
+*******************************************************************************/
 bool FileDialogClass::OpenWindowsDlg(bool IsOpen, bool IsPickFolder, TCHAR* pFilePath)
 {
 	WCHAR suffixsource[SUFFIXMAXLEN] = { '\0' };

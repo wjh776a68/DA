@@ -143,7 +143,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CheckDA.h" />
+    <ClInclude Include="CheckDA.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="DA.h" />
     <ClInclude Include="FileDialog.h" />
     <ClInclude Include="FileIOFunctions.h" />
@@ -154,7 +157,10 @@
     <ClInclude Include="DAcommon.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CheckDA.cpp" />
+    <ClCompile Include="CheckDA.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="DA.cpp" />
     <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="FileIOFunctions.cpp" />

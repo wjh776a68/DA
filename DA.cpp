@@ -35,6 +35,7 @@ TCHAR                   szWindowClass_SubWindows[MAX_LOADSTRING] = _T("childwin3
 HWND                    main_RichTextBox_VAR;                      //富文本框
 //HWND                    main_underoutput_RichTextBox_VAR;          //下方输出富文本框
 HWND                    hwndList;                                   //下方输出表单
+HWND                    VIW_hwndList;
 
 HWND                    subwindows_AddVIW_hwnd;
 HWND                    SubWindows_TextBox,
@@ -57,9 +58,9 @@ BOOL                    InitInstance(HINSTANCE, int);
 LRESULT CALLBACK        WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK        WndProc_SubWindows(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK        About(HWND, UINT, WPARAM, LPARAM);
+void                    ChangeSizetoDefault(HWND hwnd);
 
-
-
+//文件主入口
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -79,6 +80,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_DA, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
     MyRegisterClass_SubWindows(hInstance);
+    
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow))
@@ -182,41 +184,21 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-/**************************************************************
-*   函数名：	createwidgets
-*	功能：	创建富文本框函数
-*	输入:	hWnd	        HWND	父窗口句柄
-*	返回值：	0|-1       		int 	如果发生错误返回-1，否则返回0
-***************************************************************/
-int createwidgets(HWND hWnd) {
-    main_RichTextBox_VAR = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("点击“文件”以打开新文件.\n"),
-        WS_VISIBLE | WS_CHILD | WS_VSCROLL |
-        ES_MULTILINE | ES_LEFT | ES_NOHIDESEL | ES_AUTOVSCROLL /*| ES_READONLY*/,
-        0, 0, 480, 400,
-        hWnd, NULL, hInst, NULL);
 
-    //main_underoutput_RichTextBox_VAR = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("暂无输出.\n"),
-    //    WS_VISIBLE | WS_CHILD | WS_VSCROLL |
-    //    ES_MULTILINE | ES_LEFT | ES_NOHIDESEL | ES_AUTOVSCROLL /*| ES_READONLY*/,
-    //    0, 0, 480, 400,
-    //    hWnd, NULL, hInst, NULL);
+void createDAWindows(HWND mainwindows_hWnd) {
+    hwndList = CreateWindowEx(0, WC_LISTVIEW, TEXT(""),
+        WS_VISIBLE | WS_BORDER | WS_CHILD | LVS_REPORT | WS_THICKFRAME | WS_EX_TOPMOST | (WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX)   /* | LVS_EDITLABELS*/,
+        0, 400, 480, 400,
+        mainwindows_hWnd, (HMENU)IDM_LISTBOX_OUTPUT, hInst, 0);
 
-    if (/*!main_underoutput_RichTextBox_VAR |*/ !main_RichTextBox_VAR){
-        FatalAppExitA(0, "Couldn't create the rich text box,program exit!");
-        return -1;
-    }
 
-    hwndList = CreateWindowEx(0,WC_LISTVIEW, TEXT(""),
-        WS_VISIBLE | WS_BORDER | WS_CHILD | LVS_REPORT | WS_THICKFRAME | WS_EX_TOPMOST    /* | LVS_EDITLABELS*/,
-        0, 0, 480, 400,
-        hWnd, (HMENU)IDM_LISTBOX_OUTPUT, hInst, 0);
+    SetWindowPos(hwndList, HWND_TOP, NULL, NULL, NULL, NULL, SWP_NOSIZE | SWP_NOMOVE | SWP_NOCOPYBITS);
 
     ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT /*| LVS_EX_CHECKBOXES*/ | LVS_EX_GRIDLINES);
 
-    
     tagLVCOLUMNW lvcolum;
-    TCHAR wordtext[] = TEXT("单词"),attribtext[] = TEXT("二元序列（单词种别，单词属性）"),typetext[] = TEXT("类型"),positiontext[] = TEXT("位置（行，列）");
-    
+    TCHAR wordtext[] = TEXT("单词"), attribtext[] = TEXT("二元序列（单词种别，单词属性）"), typetext[] = TEXT("类型"), positiontext[] = TEXT("位置（行，列）");
+
     lvcolum.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
     lvcolum.fmt = LVCFMT_CENTER;
     lvcolum.cx = 150;
@@ -235,11 +217,114 @@ int createwidgets(HWND hWnd) {
     lvcolum.pszText = positiontext;
     lvcolum.iSubItem = 3;
     ListView_InsertColumn(hwndList, 3, &lvcolum);
+}
+
+void createVIWWindows(HWND mainwindows_hWnd) {
+    VIW_hwndList = CreateWindowEx(0, WC_LISTVIEW, TEXT(""),
+        WS_VISIBLE | WS_BORDER | WS_CHILD | LVS_REPORT | WS_THICKFRAME | WS_EX_TOPMOST | (WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX)   /* | LVS_EDITLABELS*/,
+        0, 400, 480, 400,
+        mainwindows_hWnd, (HMENU)IDM_LISTBOX_OUTPUT, hInst, 0);
 
 
+    SetWindowPos(VIW_hwndList, HWND_TOP, NULL, NULL, NULL, NULL, SWP_NOSIZE | SWP_NOMOVE | SWP_NOCOPYBITS);
+
+    ListView_SetExtendedListViewStyle(VIW_hwndList, LVS_EX_FULLROWSELECT /*| LVS_EX_CHECKBOXES*/ | LVS_EX_GRIDLINES);
+
+    tagLVCOLUMNW lvcolum;
+    TCHAR wordtext[] = TEXT("关键字"), attribtext[] = TEXT("分界符"), typetext[] = TEXT("赋值运算符"), positiontext[] = TEXT("关系运算符");
+
+    lvcolum.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+    lvcolum.fmt = LVCFMT_CENTER;
+    lvcolum.cx = 150;
+    lvcolum.pszText = wordtext;
+    lvcolum.iSubItem = 0;
+    ListView_InsertColumn(VIW_hwndList, 0, &lvcolum);
+    lvcolum.cx = 340;
+    lvcolum.pszText = attribtext;
+    lvcolum.iSubItem = 1;
+    ListView_InsertColumn(VIW_hwndList, 1, &lvcolum);
+    lvcolum.cx = 190;
+    lvcolum.pszText = typetext;
+    lvcolum.iSubItem = 2;
+    ListView_InsertColumn(VIW_hwndList, 2, &lvcolum);
+    lvcolum.cx = 760;
+    lvcolum.pszText = positiontext;
+    lvcolum.iSubItem = 3;
+    ListView_InsertColumn(VIW_hwndList, 3, &lvcolum);
+
+    CheckDACore.BindVIWHWND(VIW_hwndList);
+}
+
+/**************************************************************
+*   函数名：	createwidgets
+*	功能：	创建富文本框函数
+*	输入:	hWnd	        HWND	父窗口句柄
+*	返回值：	0|-1       		int 	如果发生错误返回-1，否则返回0
+***************************************************************/
+int createwidgets(HWND hWnd) {
+    main_RichTextBox_VAR = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("点击“文件”以打开新文件.\n"),
+        WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_THICKFRAME | WS_OVERLAPPED |
+        ES_MULTILINE | ES_LEFT | ES_NOHIDESEL | ES_AUTOVSCROLL /*| ES_READONLY*/,
+        0, 0, 480, 400,
+        hWnd, NULL, hInst, NULL);
+   
+
+    //main_underoutput_RichTextBox_VAR = CreateWindowEx(0, MSFTEDIT_CLASS, TEXT("暂无输出.\n"),
+    //    WS_VISIBLE | WS_CHILD | WS_VSCROLL |
+    //    ES_MULTILINE | ES_LEFT | ES_NOHIDESEL | ES_AUTOVSCROLL /*| ES_READONLY*/,
+    //    0, 0, 480, 400,
+    //    hWnd, NULL, hInst, NULL);
+
+    if (/*!main_underoutput_RichTextBox_VAR |*/ !main_RichTextBox_VAR){
+        FatalAppExitA(0, "Couldn't create the rich text box,program exit!");
+        return -1;
+    }
+
+    
+    createDAWindows(hWnd);
+
+    ShowWindow(hwndList,SW_SHOWNORMAL);
+    UpdateWindow(hwndList);
+    UpdateWindow(hWnd);
     return 0;
 }
 
+
+void StartDAWindows(HWND mainwindows_hWnd){
+    PWINDOWINFO tmp = (PWINDOWINFO)malloc(sizeof(WINDOWINFO));
+    tmp->cbSize = sizeof(WINDOWINFO);
+    if (GetWindowInfo(hwndList, tmp) == true) {
+        ShowWindow(hwndList, SW_SHOWNORMAL);
+        UpdateWindow(hwndList);
+        UpdateWindow(mainwindows_hWnd);
+    }
+    else {
+        createDAWindows(mainwindows_hWnd);       
+    }
+    ChangeSizetoDefault(mainwindows_hWnd);
+}
+
+void StartVIWWindows(HWND mainwindows_hWnd) {
+    PWINDOWINFO tmp = (PWINDOWINFO)malloc(sizeof(WINDOWINFO));
+    tmp->cbSize = sizeof(WINDOWINFO);
+    if (GetWindowInfo(VIW_hwndList, tmp) == true) {
+        ShowWindow(VIW_hwndList, SW_SHOWNORMAL);
+        UpdateWindow(VIW_hwndList);
+        UpdateWindow(mainwindows_hWnd);
+    }
+    else {
+        createVIWWindows(mainwindows_hWnd);
+    }
+    ChangeSizetoDefault(mainwindows_hWnd);
+    CheckDACore.addVIWtoVIWWindows();
+}
+
+/**************************************************************
+*   函数名：	SubWindows_AddVIW
+*	功能：	创建添加关键词子窗口
+*	输入:	mainwindows_hWnd    HWND	父窗口句柄
+*	返回值： void 	
+***************************************************************/
 void SubWindows_AddVIW(HWND mainwindows_hWnd) {
     subwindows_AddVIW_hwnd = CreateWindowExW(0, L"childwin32app", TEXT("添加关键词、分界符、算术运算符、关系运算符\n"),
          WS_OVERLAPPED | WS_SYSMENU,
@@ -288,7 +373,16 @@ void SubWindows_AddVIW(HWND mainwindows_hWnd) {
 }
 
 
-
+//
+//  FUNCTION: WndProc_SubWindows(HWND, UINT, WPARAM, LPARAM)
+//
+//  PURPOSE: Processes messages for the sub window.
+//
+//  WM_COMMAND  - process the application menu
+//  WM_PAINT    - Paint the sub window
+//  WM_DESTROY  - post a quit message and return
+//
+//
 LRESULT CALLBACK WndProc_SubWindows(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_CREATE:
@@ -338,6 +432,7 @@ LRESULT CALLBACK WndProc_SubWindows(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_DESTROY:
         //PostQuitMessage(0);
+
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -346,6 +441,25 @@ LRESULT CALLBACK WndProc_SubWindows(HWND hWnd, UINT message, WPARAM wParam, LPAR
 
     return 0;
 }
+
+void ChangeSizetoDefault(HWND hWnd) {
+    PWINDOWINFO tmp = (PWINDOWINFO)malloc(sizeof(WINDOWINFO));
+    tmp->cbSize = sizeof(WINDOWINFO);   
+    LPRECT rect = (LPRECT)malloc(sizeof(tagRECT));
+    GetClientRect(hWnd, rect);
+
+    SetWindowPos(main_RichTextBox_VAR, HWND_BOTTOM, 0, 0, rect->right, int(rect->bottom * 0.6), SWP_NOMOVE | SWP_NOZORDER);
+    if (GetWindowInfo(hwndList, tmp) == true) {
+       
+        SetWindowPos(hwndList, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
+    }
+    if (GetWindowInfo(VIW_hwndList, tmp) == true) {
+        SetWindowPos(VIW_hwndList, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
+    }
+   
+}
+
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -368,6 +482,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
        // RichTextDialog_output_core.RichTextDialog_BindHWND(main_underoutput_RichTextBox_VAR);
         break;
     }
+    
     case WM_COMMAND:
     {
 
@@ -410,6 +525,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             CheckDACore.DoCheck();
             break;
 
+        case IDM_MORE_DA:
+            StartDAWindows(hWnd);
+            break;
+        case IDM_MORE_VIW:
+            StartVIWWindows(hWnd);
+            break;
         case IDM_ABOUT:
             DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
             break;
@@ -435,11 +556,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
     {
         
-        LPRECT rect = (LPRECT)malloc(sizeof(tagRECT));
-        GetClientRect(hWnd, rect);
-        SetWindowPos(main_RichTextBox_VAR, HWND_TOP, 0, 0, rect->right, int(rect->bottom * 0.6), SWP_NOMOVE | SWP_NOZORDER);
-        SetWindowPos(hwndList, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
-       // SetWindowPos(main_underoutput_RichTextBox_VAR, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
+        ChangeSizetoDefault(hWnd);
+        // SetWindowPos(main_underoutput_RichTextBox_VAR, HWND_TOP, 0, int(rect->bottom * 0.6) + 1, rect->right, rect->bottom - (int(rect->bottom * 0.6) + 1), SWP_NOZORDER);
+        
+        //UpdateWindow(main_RichTextBox_VAR);
+       // UpdateWindow(hwndList);
+        //UpdateWindow(hWnd);
+       
         break;
         
     }
